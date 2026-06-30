@@ -13,3 +13,8 @@ dist/
 # Environnement
 .env
 *.cache.txt
+
+#tests
+test.pdf
+test.png
+test_uml.png
