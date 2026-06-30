@@ -16,6 +16,8 @@ export class ChatComponent implements OnInit {
   isTyping = false;
   selectedDocument: string = '';
   availableDocuments: any[] = [];
+  showFavorites = false;
+  draggedMessage: any = null;
 
   suggestions = [
     'De quoi parle ce document ?',
@@ -35,6 +37,10 @@ export class ChatComponent implements OnInit {
 
   get messages() {
     return this.api.getHistory();
+  }
+
+  get favorites() {
+    return this.api.getFavorites();
   }
 
   useSuggestion(suggestion: string) {
@@ -57,7 +63,7 @@ export class ChatComponent implements OnInit {
     this.api.askQuestion(question, this.messages, filter).subscribe({
       next: (res: any) => {
         this.isTyping = false;
-        this.api.addToHistory('assistant', res.answer, res.sources || []);
+        this.api.addToHistory('assistant', res.answer, res.sources || [], res.confidence || null);
         this.isLoading = false;
         this.cdr.detectChanges();
         this.scrollToBottom();
@@ -72,9 +78,10 @@ export class ChatComponent implements OnInit {
   }
 
   clearHistory() {
-    this.api.clearHistory();
-    this.cdr.detectChanges();
-  }
+  this.api.saveCurrentSession();
+  this.api.clearHistory();
+  this.cdr.detectChanges();
+}
 
   scrollToBottom() {
     setTimeout(() => {
@@ -88,5 +95,61 @@ export class ChatComponent implements OnInit {
       event.preventDefault();
       this.sendMessage();
     }
+  }
+
+  // ── Favoris ──────────────────────────────────────
+  toggleFavorite(msg: any) {
+    this.api.toggleFavorite(msg);
+    this.cdr.detectChanges();
+  }
+
+  toggleFavoritesPanel() {
+    this.showFavorites = !this.showFavorites;
+    this.cdr.detectChanges();
+  }
+
+  // ── Glisser-déposer pour ajouter aux favoris ─────
+  onDragStart(msg: any) {
+    this.draggedMessage = msg;
+  }
+
+  onDragEnd() {
+    this.draggedMessage = null;
+  }
+
+  onFavoriteZoneDragOver(event: DragEvent) {
+    event.preventDefault();
+  }
+
+  onFavoriteZoneDrop(event: DragEvent) {
+    event.preventDefault();
+    if (this.draggedMessage && !this.draggedMessage.favorite) {
+      this.toggleFavorite(this.draggedMessage);
+    }
+    this.draggedMessage = null;
+  }
+
+  showSessionHistory = false;
+
+  get sessionHistory() {
+    return this.api.getSessionHistory();
+  }
+
+  toggleSessionHistory() {
+    this.showSessionHistory = !this.showSessionHistory;
+    this.cdr.detectChanges();
+  }
+
+  loadSession(sessionId: number) {
+    this.api.loadSession(sessionId);
+    this.showSessionHistory = false;
+    this.cdr.detectChanges();
+    this.scrollToBottom();
+  }
+
+  deleteSession(sessionId: number, event: Event) {
+    event.stopPropagation();
+      this.api.deleteSession(sessionId);
+  this.cdr.detectChanges();
   }
 }

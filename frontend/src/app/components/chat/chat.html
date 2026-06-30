@@ -9,10 +9,21 @@
         <span class="status-dot">● En ligne</span>
       </div>
     </div>
-    <button (click)="clearHistory()" class="clear-btn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-      Effacer
+    <div class="header-actions">
+      <button (click)="toggleFavoritesPanel()" class="fav-toggle-btn" [class.active]="showFavorites">
+        <svg width="14" height="14" viewBox="0 0 24 24" [attr.fill]="showFavorites ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Favoris ({{ favorites.length }})
+      </button>
+      <button (click)="clearHistory()" class="clear-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        Effacer
+      </button>
+      <button (click)="toggleSessionHistory()" class="history-toggle-btn" [class.active]="showSessionHistory">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Historique ({{ sessionHistory.length }})
     </button>
+      
+    </div>
   </div>
 
   <div class="document-filter">
@@ -23,6 +34,39 @@
         {{ doc.filename }}
       </option>
     </select>
+  </div>
+
+  <!-- Panneau favoris (glisser un message ici) -->
+  <div *ngIf="showFavorites"
+       class="favorites-panel"
+       (dragover)="onFavoriteZoneDragOver($event)"
+       (drop)="onFavoriteZoneDrop($event)">
+    <div class="favorites-header">
+      <span>⭐ Messages favoris</span>
+      <span class="hint">Glissez un message ici pour l'épingler</span>
+    </div>
+    <div *ngIf="favorites.length === 0" class="favorites-empty">
+      Aucun favori pour le moment
+    </div>
+    <div *ngFor="let fav of favorites" class="favorite-item">
+      <span class="fav-role">{{ fav.role === 'user' ? 'Vous' : 'Assistant' }}</span>
+      <p>{{ fav.content }}</p>
+      <button class="unfav-btn" (click)="toggleFavorite(fav)">Retirer</button>
+    </div>
+  </div>
+
+  <div *ngIf="showSessionHistory" class="session-panel">
+    <div class="session-header">📜 Conversations sauvegardées</div>
+    <div *ngIf="sessionHistory.length === 0" class="favorites-empty">
+      Aucune conversation sauvegardée. Cliquez "Effacer" pour archiver la conversation actuelle.
+    </div>
+    <div *ngFor="let session of sessionHistory" class="session-item" (click)="loadSession(session.id)">
+      <div class="session-info">
+        <strong>{{ session.preview }}...</strong>
+        <span>{{ session.date | date:'dd/MM HH:mm' }} · {{ session.messages.length }} messages</span>
+      </div>
+      <button class="delete-session-btn" (click)="deleteSession(session.id, $event)">✕</button>
+    </div>
   </div>
 
   <div class="messages" #messagesContainer>
@@ -44,19 +88,35 @@
       </div>
     </div>
 
-    <!-- Messages -->
-    <div *ngFor="let msg of messages" [class]="'message ' + msg.role">
-      <div class="bubble">
-        <span class="role">{{ msg.role === 'user' ? 'Vous' : 'Assistant RAG' }}</span>
+    <!-- Messages (historique complet, glissables vers favoris) -->
+    <div *ngFor="let msg of messages"
+         [class]="'message ' + msg.role"
+         draggable="true"
+         (dragstart)="onDragStart(msg)"
+         (dragend)="onDragEnd()">
+      <div class="bubble" [class.is-favorite]="msg.favorite">
+        <div class="bubble-top">
+          <span class="role">{{ msg.role === 'user' ? 'Vous' : 'Assistant RAG' }}</span>
+          <button class="fav-star-btn" [class.active]="msg.favorite" (click)="toggleFavorite(msg)" title="Ajouter aux favoris">
+            <svg width="13" height="13" viewBox="0 0 24 24" [attr.fill]="msg.favorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </button>
+        </div>
         <p>{{ msg.content }}</p>
+
+        <!-- Indicateur de confiance -->
+        <div *ngIf="msg.confidence" class="confidence-badge" [class]="'confidence-' + msg.confidence.level">
+          <span class="confidence-dot"></span>
+          Confiance {{ msg.confidence.label }} · {{ msg.confidence.score }}%
+        </div>
+
         <div *ngIf="msg.sources && msg.sources.length > 0" class="sources-list">
           <a *ngFor="let src of msg.sources" [href]="src.url" target="_blank" class="source-link">
             📎 {{ src.filename }}
-      </a>
+          </a>
+        </div>
+        <span class="time">{{ msg.timestamp | date:'HH:mm' }}</span>
+      </div>
     </div>
-    <span class="time">{{ msg.timestamp | date:'HH:mm' }}</span>
-  </div>
-</div>
 
     <!-- Animation typing -->
     <div *ngIf="isTyping" class="message assistant">
