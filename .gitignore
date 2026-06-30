@@ -1,0 +1,15 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+chroma_db/
+uploaded_files/
+
+# Node / Angular
+node_modules/
+.angular/
+dist/
+
+# Environnement
+.env
+*.cache.txt
