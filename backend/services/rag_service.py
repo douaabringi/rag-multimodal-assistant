@@ -72,6 +72,31 @@ def process_and_index_file(file_path: str, filename: str) -> dict:
     }
 
 
+def compute_confidence(response, num_sources: int) -> dict:
+    """
+    Calcule un indicateur de confiance basé sur :
+    - le nombre de sources trouvées
+    - le score de similarité moyen des nodes récupérés
+    """
+    if num_sources == 0:
+        return {"level": "low", "label": "Faible", "score": 0}
+
+    scores = []
+    for node in response.source_nodes:
+        if hasattr(node, "score") and node.score is not None:
+            scores.append(node.score)
+
+    avg_score = sum(scores) / len(scores) if scores else 0.5
+
+    # Combine score de similarité + nombre de sources
+    if avg_score >= 0.75 and num_sources >= 2:
+        return {"level": "high", "label": "Élevée", "score": round(avg_score * 100)}
+    elif avg_score >= 0.55 or num_sources >= 1:
+        return {"level": "medium", "label": "Moyenne", "score": round(avg_score * 100)}
+    else:
+        return {"level": "low", "label": "Faible", "score": round(avg_score * 100)}
+
+
 def query_documents(question: str, filename: str = None) -> dict:
     try:
         index = load_index()
@@ -99,11 +124,14 @@ def query_documents(question: str, filename: str = None) -> dict:
                     "url": f"http://localhost:8000/files/{source_name}"
                 })
 
+        confidence = compute_confidence(response, len(sources))
+
         return {
             "success": True,
             "question": question,
             "answer": str(response),
-            "sources": sources
+            "sources": sources,
+            "confidence": confidence
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
