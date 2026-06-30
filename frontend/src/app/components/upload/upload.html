@@ -1,0 +1,76 @@
+<div class="upload-wrapper">
+
+  <!-- Zone drag & drop -->
+  <div
+    class="upload-zone"
+    [class.dragging]="isDragging"
+    [class.has-file]="selectedFile && !isLoading"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)">
+
+    <!-- Etat initial -->
+    <div *ngIf="!selectedFile && !isLoading" class="upload-idle">
+      <div class="upload-icon-wrapper">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      </div>
+      <h2>Déposez votre document ici</h2>
+      <p>ou cliquez pour parcourir vos fichiers</p>
+      <div class="format-chips">
+        <span class="chip">PDF</span>
+        <span class="chip">PNG</span>
+        <span class="chip">JPG</span>
+        <span class="chip">JPEG</span>
+      </div>
+      <input
+        type="file"
+        id="fileInput"
+        accept=".pdf,.png,.jpg,.jpeg"
+        (change)="onFileSelected($event)"
+        style="display: none;"
+      />
+      <label for="fileInput" class="browse-btn">Parcourir les fichiers</label>
+    </div>
+
+    <!-- Aperçu fichier sélectionné -->
+    <div *ngIf="selectedFile && !isLoading" class="file-preview">
+      <div *ngIf="previewUrl" class="image-preview">
+        <img [src]="previewUrl" alt="Aperçu" />
+      </div>
+      <div *ngIf="!previewUrl" class="pdf-preview">
+        <span class="file-icon">{{ getFileIcon() }}</span>
+      </div>
+      <div class="file-info">
+        <strong>{{ selectedFile.name }}</strong>
+        <span>{{ formatSize(selectedFile.size) }}</span>
+      </div>
+      <div class="file-actions">
+        <button class="upload-confirm-btn" (click)="uploadFile()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          Indexer ce document
+        </button>
+        <button class="cancel-btn" (click)="selectedFile = null; previewUrl = null">
+          Annuler
+        </button>
+      </div>
+    </div>
+
+    <!-- Progression -->
+    <div *ngIf="isLoading" class="upload-progress">
+      <div class="progress-icon">⚙️</div>
+      <p class="progress-label">Analyse et indexation vectorielle...</p>
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar" [style.width.%]="progress"></div>
+      </div>
+      <span class="progress-percent">{{ progress | number:'1.0-0' }}%</span>
+    </div>
+
+  </div>
+
+  <!-- Message résultat -->
+  <div *ngIf="message && !isLoading" class="result-message" [class.success]="success" [class.error]="!success">
+    <span>{{ success ? '✅' : '❌' }}</span>
+    {{ message }}
+  </div>
+
+</div>

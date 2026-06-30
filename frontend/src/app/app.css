@@ -1,0 +1,121 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Ambient aurora blobs behind the whole app */
+body::before, body::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  z-index: -1;
+  opacity: 0.55;
+  pointer-events: none;
+  animation: float 16s ease-in-out infinite alternate;
+}
+
+body::before {
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, var(--vermeg-accent-soft), transparent 70%);
+  top: -160px;
+  left: -120px;
+}
+
+body::after {
+  width: 560px;
+  height: 560px;
+  background: radial-gradient(circle, rgba(229, 36, 35, 0.16), transparent 70%);
+  bottom: -200px;
+  right: -160px;
+  animation-delay: -8s;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(40px, 30px) scale(1.08); }
+}
+
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+
+header {
+  background: linear-gradient(120deg, var(--vermeg-navy) 0%, #002a66 55%, var(--vermeg-accent) 130%);
+  color: white;
+  padding: 18px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-soft);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+}
+
+header h1 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+header h1 svg { filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25)); }
+
+nav {
+  display: flex;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 5px;
+  border-radius: 14px;
+  backdrop-filter: blur(6px);
+}
+
+nav button {
+  padding: 9px 20px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+nav button:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+nav button.active {
+  background: white;
+  color: var(--vermeg-navy);
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+main {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 36px 20px 60px;
+  flex: 1;
+  animation: fadeUp 0.5s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}

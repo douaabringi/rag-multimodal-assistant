@@ -1,0 +1,25 @@
+<div class="app">
+  <header>
+    <h1>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 7.54 16.59A4 4 0 0 0 16 15H8a4 4 0 0 0-3.54 3.59A10 10 0 0 1 12 2z"/><circle cx="12" cy="10" r="3"/></svg>
+      RAG Multimodal Assistant
+    </h1>
+    <nav>
+      <button (click)="activeTab='chat'" [class.active]="activeTab==='chat'">
+        Chat
+      </button>
+      <button (click)="activeTab='upload'" [class.active]="activeTab==='upload'">
+        Téléverser
+      </button>
+      <button (click)="activeTab='documents'" [class.active]="activeTab==='documents'">
+        Documents
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    <app-chat *ngIf="activeTab==='chat'"></app-chat>
+    <app-upload *ngIf="activeTab==='upload'"></app-upload>
+    <app-documents *ngIf="activeTab==='documents'"></app-documents>
+  </main>
+</div>

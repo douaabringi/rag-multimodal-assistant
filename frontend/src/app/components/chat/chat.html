@@ -1,0 +1,88 @@
+<div class="chat-container">
+  <div class="chat-header">
+    <div class="header-left">
+      <div class="ai-avatar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 7.54 16.59A4 4 0 0 0 16 15H8a4 4 0 0 0-3.54 3.59A10 10 0 0 1 12 2z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <div>
+        <h2>Assistant RAG Intelligent</h2>
+        <span class="status-dot">● En ligne</span>
+      </div>
+    </div>
+    <button (click)="clearHistory()" class="clear-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      Effacer
+    </button>
+  </div>
+
+  <div class="document-filter">
+    <label>📂 Filtrer par document :</label>
+    <select [(ngModel)]="selectedDocument">
+      <option value="">Tous les documents</option>
+      <option *ngFor="let doc of availableDocuments" [value]="doc.filename">
+        {{ doc.filename }}
+      </option>
+    </select>
+  </div>
+
+  <div class="messages" #messagesContainer>
+
+    <!-- Etat vide avec suggestions -->
+    <div *ngIf="messages.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <h3>Comment puis-je vous aider ?</h3>
+      <p>Posez une question sur vos documents indexés</p>
+      <div class="suggestions">
+        <button
+          *ngFor="let s of suggestions"
+          class="suggestion-chip"
+          (click)="useSuggestion(s)">
+          {{ s }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div *ngFor="let msg of messages" [class]="'message ' + msg.role">
+      <div class="bubble">
+        <span class="role">{{ msg.role === 'user' ? 'Vous' : 'Assistant RAG' }}</span>
+        <p>{{ msg.content }}</p>
+        <div *ngIf="msg.sources && msg.sources.length > 0" class="sources-list">
+          <a *ngFor="let src of msg.sources" [href]="src.url" target="_blank" class="source-link">
+            📎 {{ src.filename }}
+      </a>
+    </div>
+    <span class="time">{{ msg.timestamp | date:'HH:mm' }}</span>
+  </div>
+</div>
+
+    <!-- Animation typing -->
+    <div *ngIf="isTyping" class="message assistant">
+      <div class="bubble typing-bubble">
+        <span class="role">Assistant RAG</span>
+        <div class="typing-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="input-area">
+    <textarea
+      [(ngModel)]="currentQuestion"
+      (keydown)="onKeyPress($event)"
+      placeholder="Écrivez votre message... (Entrée pour envoyer)"
+      [disabled]="isLoading"
+      rows="2"
+    ></textarea>
+    <button
+      (click)="sendMessage()"
+      [disabled]="isLoading || !currentQuestion.trim()"
+      class="send-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
