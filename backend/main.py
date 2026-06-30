@@ -3,6 +3,7 @@ import sys
 import shutil
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+from typing import Optional
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,6 +37,7 @@ app.add_middleware(
 
 class QuestionRequest(BaseModel):
     question: str
+    filename: Optional[str] = None
 
 
 # ─── ROUTE 1 : Upload ───────────────────────────────
@@ -64,7 +66,7 @@ async def query(request: QuestionRequest):
     if not request.question.strip():
         raise HTTPException(status_code=400, detail="Question vide")
 
-    result = query_documents(request.question)
+    result = query_documents(request.question, request.filename)
 
     if not result["success"]:
         raise HTTPException(status_code=500, detail=result["error"])

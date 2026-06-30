@@ -72,10 +72,22 @@ def process_and_index_file(file_path: str, filename: str) -> dict:
     }
 
 
-def query_documents(question: str) -> dict:
+def query_documents(question: str, filename: str = None) -> dict:
     try:
         index = load_index()
-        query_engine = create_query_engine(index)
+
+        if filename:
+            from llama_index.core.vector_stores import MetadataFilters, MetadataFilter
+            filters = MetadataFilters(filters=[
+                MetadataFilter(key="source", value=filename)
+            ])
+            query_engine = index.as_query_engine(
+                similarity_top_k=TOP_K,
+                filters=filters
+            )
+        else:
+            query_engine = create_query_engine(index)
+
         response = query_engine.query(question)
 
         sources = []
